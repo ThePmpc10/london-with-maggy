@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para ti ❤️</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* SF PRO / System Font Stack */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%); /* Gradiente suave e moderno */
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #1d1d1f; /* Apple dark gray */
+            overflow: hidden;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            padding: 3rem 2rem;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        h1, h2 {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #424245;
+            margin-bottom: 2rem;
+        }
+
+        /* Input Estiloso */
+        input[type="text"] {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            text-align: center;
+            transition: 0.3s;
+        }
+        input[type="text"]:focus {
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05), 0 0 0 2px #007aff; /* Apple Blue */
+        }
+
+        /* Botão Apple Style */
+        .btn {
+            background-color: #007aff;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 99px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            width: 100%;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn:hover { background-color: #005ecb; }
+
+        /* Utilitários */
+        .hidden { display: none; opacity: 0; }
+        .fade-in { animation: fadeIn 0.5s forwards; }
+        .error { color: #ff3b30; font-size: 0.9rem; margin-top: -10px; margin-bottom: 10px; height: 1.2em; font-weight: 500;}
+
+        /* Globo Animation */
+        .big-emoji { font-size: 5rem; margin-bottom: 1rem; display: inline-block; }
+        .spin { animation: spin 4s infinite linear; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+<div id="intro-card" class="glass-card fade-in">
+    <div class="big-emoji">🎁</div>
+    <h1>Olá!</h1>
+    <p>Tenho uma surpresa especial para ti.<br>Mas para a descobrires, vais ter de provar que sabes tudo sobre nós.</p>
+    <button class="btn" onclick="startQuiz()">Começar Desafio</button>
+</div>
+
+<div id="quiz-card" class="glass-card hidden">
+    <div style="font-size: 0.8rem; text-transform: uppercase; color: #86868b; margin-bottom: 10px;">Pergunta <span id="q-number">1</span></div>
+    <h2 id="question-text">Pergunta aqui</h2>
+    <input type="text" id="answer-input" placeholder="A tua resposta..." autocomplete="off">
+    <div class="error" id="error-msg"></div>
+    <button class="btn" onclick="checkAnswer()">Confirmar</button>
+</div>
+
+<div id="success-card" class="glass-card hidden">
+    <div class="big-emoji spin">🌍</div>
+    <h1>VAMOS PARA LONDRES!</h1>
+    <p>Parabéns, acertaste tudo!<br>Prepara as malas, a viagem é nossa. 🇬🇧✈️</p>
+    <button class="btn" onclick="window.open('https://earth.google.com/web/search/London', '_blank')">Ver Destino</button>
+</div>
+
+<script>
+    // ==========================================
+    // CONFIGURAÇÃO (Edita aqui as perguntas)
+    // ==========================================
+    const questions = [
+        // { q: "Pergunta", a: "Resposta" }
+        { q: "Qual é a minha comida favorita?", a: "sushi" },
+        { q: "Em que dia começámos a namorar?", a: "14" },
+        { q: "Qual é o nome do nosso gato?", a: "tareco" },
+
+        // A ÚLTIMA PERGUNTA (Não apagues, só edita se necessário)
+        { q: "Qual é a capital da Inglaterra?", a: "londres" }
+    ];
+    // ==========================================
+
+    let currentStep = 0;
+
+    // Elementos
+    const introCard = document.getElementById('intro-card');
+    const quizCard = document.getElementById('quiz-card');
+    const successCard = document.getElementById('success-card');
+
+    const qText = document.getElementById('question-text');
+    const qNum = document.getElementById('q-number');
+    const input = document.getElementById('answer-input');
+    const error = document.getElementById('error-msg');
+
+    function startQuiz() {
+        introCard.classList.add('hidden');
+        quizCard.classList.remove('hidden');
+        quizCard.classList.add('fade-in');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        qText.innerText = questions[currentStep].q;
+        qNum.innerText = currentStep + 1;
+        input.value = "";
+        error.innerText = "";
+        input.focus();
+    }
+
+    function checkAnswer() {
+        const userAns = input.value.trim().toLowerCase();
+        const correctAns = questions[currentStep].a.toLowerCase();
+
+        // Lógica flexível (se a resposta do user contiver a palavra chave)
+        if (userAns.includes(correctAns) && userAns !== "") {
+            nextStep();
+        } else {
+            error.innerText = "Errado... Tenta outra vez! ❤️";
+            shakeCard();
+            input.focus();
+        }
+    }
+
+    function nextStep() {
+        currentStep++;
+        if (currentStep < questions.length) {
+            // Pequeno delay para transição suave
+            input.style.borderColor = "#34c759"; // Verde rápido
+            setTimeout(() => {
+                input.style.borderColor = "none";
+                loadQuestion();
+            }, 300);
+        } else {
+            showSuccess();
+        }
+    }
+
+    function shakeCard() {
+        quizCard.style.transform = "translateX(10px)";
+        setTimeout(() => quizCard.style.transform = "translateX(-10px)", 100);
+        setTimeout(() => quizCard.style.transform = "translateX(0)", 200);
+    }
+
+    function showSuccess() {
+        quizCard.classList.add('hidden');
+        successCard.classList.remove('hidden');
+        successCard.classList.add('fade-in');
+        launchConfetti();
+    }
+
+    function launchConfetti() {
+        var duration = 8 * 1000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) return clearInterval(interval);
+            var particleCount = 50 * (timeLeft / duration);
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
+        }, 250);
+    }
+
+    // Enter key support
+    input.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") checkAnswer();
+    });
+
+</script>
+</body>
+</html>
